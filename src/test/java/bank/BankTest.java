@@ -13,19 +13,17 @@ public class BankTest {
 
     @DisplayName("El metodo deposit debe añadir el dinero indicado a la cuenta")
     @Test
-    public void Deposit_Money_AddMoneyToBalance() {
+    public void Deposit_Amount_AddAmountToBalance() {
 
-        // Act
         int cantidad = 10000;
         bank.deposit(cantidad);
 
-        // Assert
         assertEquals(cantidad, bank.getBalance());
     }
 
     @DisplayName("El metodo deposit debe laz una excepcion al introducir una cantidad negativa de dinero")
     @Test
-    public void Deposit_NegativeMoney_ThrowsException() {
+    public void Deposit_NegativeAmount_ThrowsException() {
 
         int cantidad = -10000;
 
@@ -36,32 +34,28 @@ public class BankTest {
 
     @DisplayName("El metodo withdraw debe retirar el dinero indicado de la cuenta")
     @Test
-    public void Withdraw_Money_RemoveMoneyFromBalance() {
+    public void Withdraw_Amount_RemoveAmountFromBalance() {
 
-        // Act
         int cantidad = 10000;
         bank.deposit(cantidad);
         bank.withdraw(cantidad);
 
-        // Assert
         assertEquals(0, bank.getBalance());
     }
 
     @DisplayName("El metodo withdraw debe retornar false al pedir retirar mas dinero del existente en la cuenta")
     @Test
-    public void Withdraw_Money_ReturnFalse() {
+    public void Withdraw_WrongAmount_ReturnFalse() {
 
-        // Act
         int cantidad = 10000;
         bank.deposit(cantidad);
 
-        // Assert
         assertFalse(bank.withdraw(cantidad + 1));
     }
 
     @DisplayName("El metodo withdraw debe laz una excepcion al introducir una cantidad negativa de dinero")
     @Test
-    public void Withdraw_NegativeMoney_ThrowsException() {
+    public void Withdraw_NegativeAmount_ThrowsException() {
 
         int cantidad = -10000;
 
@@ -70,24 +64,6 @@ public class BankTest {
         });
     }
 
-    // @DisplayName("El metodo payment y pending deben devolver el mismo resultado
-    // para los mismos parametros")
-    // @Test
-    // public void testPaymentAndPending() {
-    // // Arrange
-    // double total_amount = 10000;
-    // double interest = 0.001;
-    // int months = 10;
-    // int currentMonth = months / 2;
-
-    // // Act
-    // double paymentPerMonth = bank.payment(total_amount, interest, months);
-    // double total = paymentPerMonth * months;
-
-    // double pendingResult = bank.pending(total, interest, months, currentMonth);
-    // // Assert
-    // assertEquals(pendingResult, total / 2);
-    // }
     @DisplayName("El metodo payment debe devolver el total del prestamo si el interes es 0")
     @Test
     public void Payment_ZeroInterest_ReturnTotalAmount() {
@@ -101,7 +77,7 @@ public class BankTest {
         assertEquals(total_amount, (result * months));
     }
 
-    @DisplayName("El metodo payment debe devolver el precio correcto por mes si el interes es 0.05")
+    @DisplayName("El metodo payment debe devolver el precio correcto restante si el interes es 0.05")
     @Test
     public void Payment_CustomInput_ReturnRightAmount() {
 
@@ -114,13 +90,52 @@ public class BankTest {
         assertEquals(112.825410, result, 0.00001);
     }
 
-    @DisplayName("El metodo payment debe lanzar una excepcion si los valores de entrada son negativos")
+    @DisplayName("El metodo payment debe lanzar una excepcion si el total del prestamo es negativo")
     @Test
-    public void Payment_NegativeValues_ThrowsException() {
+    public void Payment_NegativeAmount_ThrowsException() {
 
         double total_amount = -100;
-        double interest = 110;
+        double interest = 0.110;
+        int months = 12;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.payment(total_amount, interest, months);
+        });
+    }
+
+    @DisplayName("El metodo payment debe lanzar una excepcion si el interes es negativo")
+    @Test
+    public void Payment_NegativeInterest_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = -0.110;
+        int months = 12;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.payment(total_amount, interest, months);
+        });
+    }
+
+    @DisplayName("El metodo payment debe lanzar una excepcion si los meses son negativos")
+    @Test
+    public void Payment_NegativeMonths_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = 0.110;
         int months = -12;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.payment(total_amount, interest, months);
+        });
+    }
+
+    @DisplayName("El metodo payment debe lanzar una excepcion si el interes es mayor que 1")
+    @Test
+    public void Payment_WrongInterest_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = 110;
+        int months = 12;
 
         assertThrows(IllegalArgumentException.class, () -> {
             bank.payment(total_amount, interest, months);
@@ -130,36 +145,32 @@ public class BankTest {
     @DisplayName("El metodo pending debe devolver el monto total si el mes actual es el primero del prestamo")
     @Test
     public void Pending_BeginMonth_ReturnFullRemeaning() {
-        // Arrange
+
         double total_amount = 10000;
         double interest = 0.001;
         int months = 12;
         int currentMonth = 0;
 
-        // Act
         double result = bank.pending(total_amount, interest, months, currentMonth);
 
-        // Assert
         assertEquals(total_amount, (double) result);
     }
 
     @DisplayName("El metodo pending debe devolver 0 si el mes actual es el ultimo mes del prestamo")
     @Test
     public void Pending_EndMonth_ReturnZeroRemeaning() {
-        // Arrange
+
         double total_amount = 10000;
         double interest = 0.001;
         int months = 12;
         int currentMonth = 12;
 
-        // Act
         double result = bank.pending(total_amount, interest, months, currentMonth);
 
-        // Assert
         assertEquals(0, (int) result);
     }
 
-    @DisplayName("El metodo pending debe devolver el precio correcto por mes si el interes es 0.05")
+    @DisplayName("El metodo pending debe devolver el precio correcto restante si el interes es 0.05")
     @Test
     public void Pending_CustomInput_ReturnRightAmount() {
 
@@ -173,13 +184,55 @@ public class BankTest {
         assertEquals(572.66703, result, 0.00001);
     }
 
-    @DisplayName("El metodo pending debe lanzar una excepcion si los valores de entrada son negativos")
+    @DisplayName("El metodo pending debe lanzar una excepcion si el total del prestamo es negativo")
     @Test
-    public void Pending_NegativeValues_ThrowsException() {
+    public void Pending_NegativeAmount_ThrowsException() {
 
         double total_amount = -100;
-        double interest = 110;
+        double interest = 0.110;
+        int months = 12;
+        int currentMonth = 5;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.pending(total_amount, interest, months, currentMonth);
+        });
+    }
+
+    @DisplayName("El metodo pending debe lanzar una excepcion si el interes es negativo")
+    @Test
+    public void Pending_NegativeInterest_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = -0.110;
+        int months = 12;
+        int currentMonth = 5;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.pending(total_amount, interest, months, currentMonth);
+        });
+    }
+
+    @DisplayName("El metodo pending debe lanzar una excepcion si los meses son negativos")
+    @Test
+    public void Pending_NegativeMonth_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = 0.110;
         int months = -12;
+        int currentMonth = 5;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.pending(total_amount, interest, months, currentMonth);
+        });
+    }
+
+    @DisplayName("El metodo pending debe lanzar una excepcion si el mes actual es negativo")
+    @Test
+    public void Pending_NegativeCurrentMonth_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = 0.110;
+        int months = 12;
         int currentMonth = -5;
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -187,4 +240,17 @@ public class BankTest {
         });
     }
 
+    @DisplayName("El metodo pending debe lanzar una excepcion si el mes actual es mayor que el numero de meses")
+    @Test
+    public void Pending_WrongActualMonth_ThrowsException() {
+
+        double total_amount = 100;
+        double interest = 0.001;
+        int months = 12;
+        int currentMonth = 15;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            bank.pending(total_amount, interest, months, currentMonth);
+        });
+    }
 }
